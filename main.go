@@ -18,7 +18,14 @@ func main() {
 
 	handler := http.FileServer(http.Dir("./static/"))
 
-	mux.Handle("/", handler)
+	mux.Handle("/app/", http.StripPrefix("/app", handler))
+	mux.HandleFunc("/healthz", hanlderReadiness)
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())
+}
+
+func hanlderReadiness(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(http.StatusText(http.StatusOK)))
 }

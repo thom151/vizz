@@ -16,7 +16,7 @@ import (
 func HashPassword(password string) (string, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return "", fmt.Errorf("Problem creating password, %v\n", err)
+		return "", fmt.Errorf("problem creating password, %v", err)
 	}
 	return string(hashed), nil
 }
@@ -64,7 +64,7 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 
 	id, err := uuid.Parse(userIdStr)
 	if err != nil {
-		return uuid.Nil, fmt.Errorf("Invalid user id: %v\n", err)
+		return uuid.Nil, fmt.Errorf("invalid user id: %v", err)
 	}
 
 	return id, nil
@@ -73,11 +73,11 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 func GetBearerToken(headers http.Header) (string, error) {
 	authHeader := headers.Get("Authorization")
 	if authHeader == "" {
-		return "", fmt.Errorf("No auth header")
+		return "", fmt.Errorf("no auth header")
 	}
 	splitAuth := strings.Split(authHeader, " ")
 	if len(splitAuth) < 2 || splitAuth[0] != "Bearer" {
-		return "", fmt.Errorf("Malformed bearer")
+		return "", fmt.Errorf("malformed bearer")
 	}
 
 	return splitAuth[1], nil

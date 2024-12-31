@@ -17,8 +17,6 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
 	w.Write(errDat)
-	return
-
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {

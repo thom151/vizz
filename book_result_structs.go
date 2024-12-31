@@ -5,8 +5,8 @@ type BookResults struct {
 	Next     any `json:"next"`
 	Previous any `json:"previous"`
 	Results  []struct {
-		ID      int    `json:"id"`
-		Title   string `json:"title"`
+		ID      int        `json:"id"`
+		Title   string     `json:"title"`
 		Authors []struct { /*...*/
 		} `json:"authors"`
 		Translators   []any             `json:"translators"`

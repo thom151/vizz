@@ -13,6 +13,7 @@ import (
 	"github.com/google/uuid"
 )
 
+/* #nosec G101 */
 const createRefreshToken = `-- name: CreateRefreshToken :one
 INSERT INTO refresh_tokens (token, created_at, updated_at, user_id, expires_at, revoked_at) 
 VALUES (
@@ -52,6 +53,8 @@ func (q *Queries) CreateRefreshToken(ctx context.Context, arg CreateRefreshToken
 	return i, err
 }
 
+
+/* #nosec G101 */
 const getToken = `-- name: GetToken :one
 SELECT token, created_at, updated_at, user_id, expires_at, revoked_at FROM refresh_tokens WHERE token = $1
 `
@@ -70,6 +73,7 @@ func (q *Queries) GetToken(ctx context.Context, token string) (RefreshToken, err
 	return i, err
 }
 
+/* #nosec G101 */
 const revokeToken = `-- name: RevokeToken :exec
 UPDATE refresh_tokens SET revoked_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP where token = $1
 `

@@ -16,7 +16,11 @@ func respondWithError(w http.ResponseWriter, code int, msg string) {
 	errDat, _ := json.Marshal(decodeError)
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(errDat)
+	_, err := w.Write(errDat)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error writing er")
+		return
+	}
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -27,6 +31,10 @@ func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
 	if err != nil {
 		respondWithError(w, 500, "Something went wrong")
 	}
-	w.Write([]byte(resp))
+	_, err = w.Write([]byte(resp))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error writing resp")
+		return
+	}
 
 }

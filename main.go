@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"sync/atomic"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -23,7 +24,10 @@ type apiConfig struct {
 func main() {
 
 	const port = "8080"
-	godotenv.Load()
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Cannot load env")
+	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
@@ -51,8 +55,9 @@ func main() {
 	mux := http.NewServeMux()
 
 	srv := &http.Server{
-		Addr:    ":" + port,
-		Handler: mux,
+		Addr:              ":" + port,
+		Handler:           mux,
+		ReadHeaderTimeout: time.Second * 5,
 	}
 
 	handler := http.FileServer(http.Dir("./static/"))
@@ -75,20 +80,36 @@ func main() {
 func hanlderReadiness(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(http.StatusText(http.StatusOK)))
+	_, err := w.Write([]byte(http.StatusText(http.StatusOK)))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error writing ok")
+		return
+	}
 }
 
 func (cfg *apiConfig) handlerReset(w http.ResponseWriter, r *http.Request) {
 	if cfg.platform != "dev" {
 		w.WriteHeader(http.StatusForbidden)
-		w.Write([]byte("Reset is only allowed in dev environment."))
+		_, err := w.Write([]byte("Reset is only allowed in dev environment."))
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error writing error ahaha")
+			return
+		}
 		return
 	}
 
 	cfg.fileserverHits.Store(0)
-	cfg.db.Reset(r.Context())
+	err := cfg.db.Reset(r.Context())
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error resetting hits")
+		return
+	}
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Hits reset to 0 and database reset to initial state."))
+	_, err = w.Write([]byte("Hits reset to 0 and database reset to initial state."))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error writing reset")
+		return
+	}
 }
 
 func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
@@ -101,5 +122,9 @@ func (cfg *apiConfig) middlewareMetricsInc(next http.Handler) http.Handler {
 func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
 	w.Header().Add("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())))
+	_, err := w.Write([]byte(fmt.Sprintf("Hits: %d", cfg.fileserverHits.Load())))
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error writing hits")
+		return
+	}
 }

@@ -10,7 +10,6 @@ import (
 	"time"
 
 	//"github.com/joho/godotenv"
-	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/thom151/vizz/internal/database"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"

@@ -10,8 +10,8 @@ import (
 	"time"
 
 	//"github.com/joho/godotenv"
-	_ "github.com/lib/pq"
 	"github.com/thom151/vizz/internal/database"
+	_ "github.com/tursodatabase/libsql-client-go"
 )
 
 type apiConfig struct {
@@ -37,7 +37,7 @@ func main() {
 		log.Fatal("cannot read port")
 	}
 
-	db, err := sql.Open("postgres", dbURL)
+	db, err := sql.Open("libsql", dbURL)
 	if err != nil {
 		log.Fatal("Cannot open db")
 	}

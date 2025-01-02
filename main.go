@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/joho/godotenv"
+	//"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/thom151/vizz/internal/database"
 )
@@ -23,14 +23,18 @@ type apiConfig struct {
 
 func main() {
 
-	port := os.Getenv("PORT")
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Cannot load env" + err.Error())
-	}
+	//	err := godotenv.Load()
+	//if err != nil {
+	//	log.Fatal("Cannot load env" + err.Error())
+	//}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
+	}
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("cannot read port")
 	}
 
 	db, err := sql.Open("postgres", dbURL)

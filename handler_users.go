@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -39,6 +40,8 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	userID := uuid.New()
+
+	log.Printf("Decoded incoming user data: %v\n", userInc)
 
 	fmt.Printf("%s, %v, %v", userInc.Email, hashed, userID)
 	userParams := database.CreateUserParams{

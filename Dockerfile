@@ -6,6 +6,5 @@ ADD vizz /usr/bin/vizz
 
 EXPOSE 8080
 
-//ADD .env /.env
 
 CMD ["vizz"]

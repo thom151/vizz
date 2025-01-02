@@ -23,7 +23,7 @@ type apiConfig struct {
 
 func main() {
 
-	const port = "8080"
+	port := os.Getenv("PORT")
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Cannot load env" + err.Error())
@@ -63,7 +63,7 @@ func main() {
 	handler := http.FileServer(http.Dir("./static/"))
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", handler)))
-	mux.HandleFunc("GET /api/healthz", hanlderReadiness)
+	mux.HandleFunc(" /api/healthz", hanlderReadiness)
 	mux.HandleFunc("GET /admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
 	mux.HandleFunc("POST /api/users", apiCfg.handlerCreateUser)

@@ -25,10 +25,10 @@ type apiConfig struct {
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Cannot load env" + err.Error())
-	}
+	//err := godotenv.Load()
+	//if err != nil {
+	//	log.Fatal("Cannot load env" + err.Error())
+	//}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
@@ -39,7 +39,7 @@ func main() {
 		log.Fatal("cannot read port")
 	}
 
-	db, err := sql.Open("postgres", dbURL)
+	db, err := sql.Open("libsql", dbURL)
 	if err != nil {
 		log.Fatal("Cannot open db" + err.Error())
 	}

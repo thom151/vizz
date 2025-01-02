@@ -21,7 +21,7 @@ type User struct {
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	type UserIncoming struct {
 		Email    string `json:"email"`
-		Password string `json"password"`
+		Password string `json:"password"`
 	}
 
 	decoder := json.NewDecoder(r.Body)

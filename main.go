@@ -11,7 +11,7 @@ import (
 
 	//"github.com/joho/godotenv"
 	"github.com/thom151/vizz/internal/database"
-	_ "github.com/tursodatabase/libsql-client-go"
+	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
 
 type apiConfig struct {

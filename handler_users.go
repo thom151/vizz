@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -39,6 +40,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	}
 	userID := uuid.New()
 
+	fmt.Printf("%s, %v, %v", userInc.Email, hashed, userID)
 	userParams := database.CreateUserParams{
 		Email:          userInc.Email,
 		HashedPassword: hashed,

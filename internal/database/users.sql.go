@@ -15,8 +15,8 @@ const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, created_at, updated_at, email, hashed_password)
 VALUES (
     $3,
-    NOW(),
-    NOW(),
+    DATETIME('now'),
+    DATETIME('now'),
     $1,
     $2
 )
@@ -69,7 +69,7 @@ func (q *Queries) Reset(ctx context.Context) error {
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET email = $2, hashed_password = $3, updated_at = NOW()
+UPDATE users SET email = $2, hashed_password = $3, updated_at = DATETIME('now')
 WHERE id = $1
 RETURNING id, created_at, updated_at, email, hashed_password
 `

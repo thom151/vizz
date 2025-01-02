@@ -2,8 +2,8 @@
 INSERT INTO users (id, created_at, updated_at, email, hashed_password)
 VALUES (
     $3,
-    NOW(),
-    NOW(),
+    DATETIME('now'),
+    DATETIME('now'),
     $1,
     $2
 )
@@ -17,6 +17,6 @@ SELECT * FROM users WHERE email=$1;
 DELETE FROM users;
 
 -- name: UpdateUser :one
-UPDATE users SET email = $2, hashed_password = $3, updated_at = NOW()
+UPDATE users SET email = $2, hashed_password = $3, updated_at = DATETIME('now')
 WHERE id = $1
 RETURNING *;

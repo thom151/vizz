@@ -37,10 +37,12 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		respondWithError(w, http.StatusInternalServerError, "Error hashing pass")
 		return
 	}
+	userID := uuid.New()
 
 	userParams := database.CreateUserParams{
 		Email:          userInc.Email,
 		HashedPassword: hashed,
+		ID:             userID,
 	}
 
 	user, err := cfg.db.CreateUser(r.Context(), userParams)

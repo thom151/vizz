@@ -46,6 +46,11 @@ jobs:
       - name: Make migration script executable
         run: chmod +x scripts/migrateup.sh
 
+      - name: Debug Database URL
+        run: |
+        echo "Database URL exists: $([[ -n $DATABASE_URL ]] && echo 'yes' || echo 'no')"
+        echo "Database URL starts with: $(echo $DATABASE_URL | cut -c1-20)..."
+
       - name: Run migrations
         run: ./scripts/migrateup.sh
 

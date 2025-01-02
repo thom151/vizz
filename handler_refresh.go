@@ -4,7 +4,9 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/thom151/vizz/internal/auth"
+	"github.com/thom151/vizz/internal/database"
 )
 
 func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
@@ -26,12 +28,21 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if token.ExpiresAt.Before(time.Now()) {
+	expiresAtTime, err := time.Parse(time.RFC3339, token.ExpiresAt)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	if expiresAtTime.Before(time.Now()) {
 		respondWithError(w, http.StatusBadRequest, "Token expired")
 		return
 	}
-
-	newJWT, err := auth.MakeJWT(token.UserID, cfg.secret, time.Hour)
+	userUUID, err := uuid.Parse(token.UserID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error parsing id in refresh")
+		return
+	}
+	newJWT, err := auth.MakeJWT(userUUID, cfg.secret, time.Hour)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Creating jwt failed")
 		return
@@ -61,7 +72,12 @@ func (cfg *apiConfig) handlerRevoke(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = cfg.db.RevokeToken(r.Context(), token.Token)
+	revokeTokenParams := database.RevokeTokenParams{
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+		Token:     token.Token,
+	}
+
+	err = cfg.db.RevokeToken(r.Context(), revokeTokenParams)
 	if err != nil {
 		respondWithError(w, 500, "Token not revoked")
 	}

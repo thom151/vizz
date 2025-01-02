@@ -7,30 +7,36 @@ package database
 
 import (
 	"context"
-
-	"github.com/google/uuid"
 )
 
 const createUser = `-- name: CreateUser :one
 INSERT INTO users (id, created_at, updated_at, email, hashed_password)
 VALUES (
-    $1,
-    DATETIME('now'),
-    DATETIME('now'),
-    $2,
-    $3
+    ?,
+    ?,
+    ?,
+    ?,
+    ?
 )
 RETURNING id, created_at, updated_at, email, hashed_password
 `
 
 type CreateUserParams struct {
-	ID             uuid.UUID
+	ID             string
+	CreatedAt      string
+	UpdatedAt      string
 	Email          string
 	HashedPassword string
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, createUser, arg.ID, arg.Email, arg.HashedPassword)
+	row := q.db.QueryRowContext(ctx, createUser,
+		arg.ID,
+		arg.CreatedAt,
+		arg.UpdatedAt,
+		arg.Email,
+		arg.HashedPassword,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,
@@ -43,7 +49,7 @@ func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) (User, e
 }
 
 const getUserByEmail = `-- name: GetUserByEmail :one
-SELECT id, created_at, updated_at, email, hashed_password FROM users WHERE email=$1
+SELECT id, created_at, updated_at, email, hashed_password FROM users WHERE email=?
 `
 
 func (q *Queries) GetUserByEmail(ctx context.Context, email string) (User, error) {
@@ -69,19 +75,25 @@ func (q *Queries) Reset(ctx context.Context) error {
 }
 
 const updateUser = `-- name: UpdateUser :one
-UPDATE users SET email = $2, hashed_password = $3, updated_at = DATETIME('now')
-WHERE id = $1
+UPDATE users SET email = ?, hashed_password = ?, updated_at = ?
+WHERE id = ?
 RETURNING id, created_at, updated_at, email, hashed_password
 `
 
 type UpdateUserParams struct {
-	ID             uuid.UUID
 	Email          string
 	HashedPassword string
+	UpdatedAt      string
+	ID             string
 }
 
 func (q *Queries) UpdateUser(ctx context.Context, arg UpdateUserParams) (User, error) {
-	row := q.db.QueryRowContext(ctx, updateUser, arg.ID, arg.Email, arg.HashedPassword)
+	row := q.db.QueryRowContext(ctx, updateUser,
+		arg.Email,
+		arg.HashedPassword,
+		arg.UpdatedAt,
+		arg.ID,
+	)
 	var i User
 	err := row.Scan(
 		&i.ID,

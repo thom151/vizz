@@ -14,10 +14,10 @@ import (
 )
 
 type User struct {
-	ID        uuid.UUID `json:"id"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
-	Email     string    `json:"email"`
+	ID        string `json:"id"`
+	CreatedAt string `json:"created_at"`
+	UpdatedAt string `json:"updated_at"`
+	Email     string `json:"email"`
 }
 
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
@@ -47,7 +47,9 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 	userParams := database.CreateUserParams{
 		Email:          userInc.Email,
 		HashedPassword: hashed,
-		ID:             userID,
+		ID:             uuid.New().String(),
+		UpdatedAt:      time.Now().UTC().Format(time.RFC3339),
+		CreatedAt:      time.Now().UTC().Format(time.RFC3339),
 	}
 
 	user, err := cfg.db.CreateUser(r.Context(), userParams)
@@ -76,7 +78,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	type response struct {
 		User
 		Token        string `json:"token"`
-		RefreshToken string `json"refresh_token"`
+		RefreshToken string `json:"refresh_token"`
 	}
 
 	decoder := json.NewDecoder(r.Body)
@@ -99,8 +101,13 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	userUUID, err := uuid.Parse(user.ID)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "Error parsing id in login")
+		return
+	}
 	expTime := time.Hour
-	accToken, err := auth.MakeJWT(user.ID, cfg.secret, expTime)
+	accToken, err := auth.MakeJWT(userUUID, cfg.secret, expTime)
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "Failed creating acc token")
 		return
@@ -115,8 +122,10 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	refreshParams := database.CreateRefreshTokenParams{
 		Token:     refreshToken,
 		UserID:    user.ID,
-		ExpiresAt: time.Now().Add(60 * 24 * time.Hour),
-		RevokedAt: sql.NullTime{},
+		CreatedAt: time.Now().UTC().Format(time.RFC3339),
+		ExpiresAt: time.Now().Add(60 * 24 * time.Hour).Format(time.RFC3339),
+		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+		RevokedAt: sql.NullString{},
 	}
 
 	_, err = cfg.db.CreateRefreshToken(r.Context(), refreshParams)
@@ -176,7 +185,7 @@ func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 	}
 
 	updatedParams := database.UpdateUserParams{
-		ID:             userID,
+		ID:             userID.String(),
 		Email:          uParams.Email,
 		HashedPassword: hashed,
 	}

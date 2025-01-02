@@ -10,6 +10,8 @@ import (
 	"time"
 
 	//"github.com/joho/godotenv"
+	"github.com/joho/godotenv"
+	_ "github.com/lib/pq"
 	"github.com/thom151/vizz/internal/database"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
 )
@@ -23,10 +25,10 @@ type apiConfig struct {
 
 func main() {
 
-	//	err := godotenv.Load()
-	//if err != nil {
-	//	log.Fatal("Cannot load env" + err.Error())
-	//}
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Cannot load env" + err.Error())
+	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
@@ -37,9 +39,9 @@ func main() {
 		log.Fatal("cannot read port")
 	}
 
-	db, err := sql.Open("libsql", dbURL)
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		log.Fatal("Cannot open db")
+		log.Fatal("Cannot open db" + err.Error())
 	}
 
 	platform := os.Getenv("PLATFORM")

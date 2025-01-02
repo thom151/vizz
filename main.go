@@ -31,6 +31,8 @@ func main() {
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
+	} else {
+		log.Printf("Using DB_URL: %s", dbURL)
 	}
 
 	port := os.Getenv("PORT")

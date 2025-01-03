@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/http"
 	"strings"
 	"time"
@@ -81,6 +82,7 @@ func GetBearerToken(headers http.Header, cookies []*http.Cookie) (string, error)
 	}
 
 	for _, cookie := range cookies {
+		log.Printf("cookie name: %v\n", cookie.Name)
 		if cookie.Name == "acc_token" {
 			return cookie.Value, nil
 		}

@@ -78,6 +78,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		}
 
 		//respondWithJSON(w, http.StatusOK, myUser)
+		fmt.Println("Created user: %v\n", myUser)
 
 		http.Redirect(w, r, "/app", http.StatusSeeOther)
 		return
@@ -140,6 +141,7 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			respondWithError(w, http.StatusInternalServerError, "Failed creating acc token")
 			return
 		}
+		fmt.Println("Created user: %v\n", accToken)
 
 		refreshToken, err := auth.MakeRefreshToken()
 		if err != nil {
@@ -168,6 +170,8 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
 		}
+
+		fmt.Println("Created user: %v\n", myUser)
 
 		http.Redirect(w, r, "/app", http.StatusSeeOther)
 		return

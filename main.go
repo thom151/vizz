@@ -23,10 +23,13 @@ type apiConfig struct {
 }
 
 func main() {
+	production := true
+	if !production {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("Cannot load env" + err.Error())
+		}
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("Cannot load env" + err.Error())
 	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {

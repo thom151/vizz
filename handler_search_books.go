@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"time"
 
@@ -17,6 +18,7 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 	}
 
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
+	log.Printf("Got cookies: %v\n", token)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't find acc token")
 		return

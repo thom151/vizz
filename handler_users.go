@@ -21,51 +21,64 @@ type User struct {
 }
 
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
-	type UserIncoming struct {
-		Email    string `json:"email"`
-		Password string `json:"password"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	userInc := UserIncoming{}
-	err := decoder.Decode(&userInc)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't decode email")
+	switch r.Method {
+	case http.MethodGet:
+		http.ServeFile(w, r, "static/login.html")
 		return
+
+	case http.MethodPost:
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Could not parse form data", http.StatusBadRequest)
+			return
+		}
+
+		type UserIncoming struct {
+			Email    string `json:"email"`
+			Password string `json:"password"`
+		}
+
+		decoder := json.NewDecoder(r.Body)
+		userInc := UserIncoming{}
+		err = decoder.Decode(&userInc)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Couldn't decode email")
+			return
+		}
+
+		hashed, err := auth.HashPassword(userInc.Password)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error hashing pass")
+			return
+		}
+		userID := uuid.New()
+
+		log.Printf("Decoded incoming user data: %v\n", userInc)
+
+		fmt.Printf("%s, %v, %v", userInc.Email, hashed, userID)
+		userParams := database.CreateUserParams{
+			Email:          userInc.Email,
+			HashedPassword: hashed,
+			ID:             uuid.New().String(),
+			UpdatedAt:      time.Now().UTC().Format(time.RFC3339),
+			CreatedAt:      time.Now().UTC().Format(time.RFC3339),
+		}
+
+		user, err := cfg.db.CreateUser(r.Context(), userParams)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Couldn't create user"+err.Error())
+			return
+		}
+
+		myUser := User{
+			ID:        user.ID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+			Email:     user.Email,
+		}
+
+		respondWithJSON(w, http.StatusOK, myUser)
 	}
-
-	hashed, err := auth.HashPassword(userInc.Password)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error hashing pass")
-		return
-	}
-	userID := uuid.New()
-
-	log.Printf("Decoded incoming user data: %v\n", userInc)
-
-	fmt.Printf("%s, %v, %v", userInc.Email, hashed, userID)
-	userParams := database.CreateUserParams{
-		Email:          userInc.Email,
-		HashedPassword: hashed,
-		ID:             uuid.New().String(),
-		UpdatedAt:      time.Now().UTC().Format(time.RFC3339),
-		CreatedAt:      time.Now().UTC().Format(time.RFC3339),
-	}
-
-	user, err := cfg.db.CreateUser(r.Context(), userParams)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Couldn't create user"+err.Error())
-		return
-	}
-
-	myUser := User{
-		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
-	}
-
-	respondWithJSON(w, http.StatusOK, myUser)
 }
 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {

@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	//"github.com/joho/godotenv"
+	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
 	"github.com/thom151/vizz/internal/database"
 	_ "github.com/tursodatabase/libsql-client-go/libsql"
@@ -24,10 +24,10 @@ type apiConfig struct {
 
 func main() {
 
-	//err := godotenv.Load()
-	//if err != nil {
-	//	log.Fatal("Cannot load env" + err.Error())
-	//}
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Cannot load env" + err.Error())
+	}
 	dbURL := os.Getenv("DB_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
@@ -67,9 +67,9 @@ func main() {
 		ReadHeaderTimeout: time.Second * 5,
 	}
 
-	handler := http.FileServer(http.Dir("./static/index.html"))
+	_ = http.FileServer(http.Dir("./static/index.html"))
 
-	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", handler)))
+	mux.HandleFunc("/app/", apiCfg.handlerIndex)
 	mux.HandleFunc("/api/healthz", hanlderReadiness)
 	mux.HandleFunc("/admin/metrics", apiCfg.handlerMetrics)
 	mux.HandleFunc("POST /admin/reset", apiCfg.handlerReset)
@@ -134,4 +134,8 @@ func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "Error writing hits")
 		return
 	}
+}
+
+func (cfg *apiConfig) handlerIndex(w http.ResponseWriter, r *http.Request) {
+	http.ServeFile(w, r, "./static/index.html")
 }

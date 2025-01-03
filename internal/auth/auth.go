@@ -72,6 +72,13 @@ func ValidateJWT(tokenString, tokenSecret string) (uuid.UUID, error) {
 }
 
 func GetBearerToken(headers http.Header, cookies []*http.Cookie) (string, error) {
+	for _, cookie := range cookies {
+		log.Printf("cookie name: %v\n", cookie.Name)
+		if cookie.Name == "acc_token" {
+			return cookie.Value, nil
+		}
+	}
+
 	authHeader := headers.Get("Authorization")
 	if authHeader == "" {
 		return "", fmt.Errorf("no auth header")
@@ -79,13 +86,6 @@ func GetBearerToken(headers http.Header, cookies []*http.Cookie) (string, error)
 	splitAuth := strings.Split(authHeader, " ")
 	if len(splitAuth) == 2 || splitAuth[0] == "Bearer" {
 		return splitAuth[1], nil
-	}
-
-	for _, cookie := range cookies {
-		log.Printf("cookie name: %v\n", cookie.Name)
-		if cookie.Name == "acc_token" {
-			return cookie.Value, nil
-		}
 	}
 
 	return "", fmt.Errorf("malformed bearer")

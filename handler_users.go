@@ -23,7 +23,7 @@ type User struct {
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/usr/bin/static/login.html")
+		http.ServeFile(w, r, "/usr/bin/static/signup.html")
 		return
 
 	case http.MethodPost:
@@ -78,87 +78,104 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 		}
 
 		respondWithJSON(w, http.StatusOK, myUser)
+
+		http.Redirect(w, r, "/app", http.StatusSeeOther)
+		return
 	}
 }
 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
-	type UserLoginInc struct {
-		Email           string `json:"email"`
-		Password        string `json:"password"`
-		ExpirationInSec int    `json:"expires_in_seconds"`
-	}
-
-	type response struct {
-		User
-		Token        string `json:"token"`
-		RefreshToken string `json:"refresh_token"`
-	}
-
-	decoder := json.NewDecoder(r.Body)
-	var userLoginInc UserLoginInc
-	err := decoder.Decode(&userLoginInc)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Login failed decoding")
+	switch r.Method {
+	case http.MethodGet:
+		http.ServeFile(w, r, "/usr/bin/static/signup.html")
 		return
-	}
 
-	user, err := cfg.db.GetUserByEmail(r.Context(), userLoginInc.Email)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Email doesn't exist")
-		return
-	}
+	case http.MethodPost:
+		err := r.ParseForm()
+		if err != nil {
+			http.Error(w, "Could not parse form data", http.StatusBadRequest)
+			return
+		}
 
-	err = auth.CheckPasswordHash(userLoginInc.Password, user.HashedPassword)
-	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Incorrect email/pass")
-		return
-	}
+		type UserLoginInc struct {
+			Email           string `json:"email"`
+			Password        string `json:"password"`
+			ExpirationInSec int    `json:"expires_in_seconds"`
+		}
 
-	userUUID, err := uuid.Parse(user.ID)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error parsing id in login")
-		return
-	}
-	expTime := time.Hour
-	accToken, err := auth.MakeJWT(userUUID, cfg.secret, expTime)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed creating acc token")
-		return
-	}
+		type response struct {
+			User
+			Token        string `json:"token"`
+			RefreshToken string `json:"refresh_token"`
+		}
 
-	refreshToken, err := auth.MakeRefreshToken()
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Failed creating ref token")
-		return
-	}
+		decoder := json.NewDecoder(r.Body)
+		var userLoginInc UserLoginInc
+		err = decoder.Decode(&userLoginInc)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Login failed decoding")
+			return
+		}
 
-	refreshParams := database.CreateRefreshTokenParams{
-		Token:     refreshToken,
-		UserID:    user.ID,
-		CreatedAt: time.Now().UTC().Format(time.RFC3339),
-		ExpiresAt: time.Now().Add(60 * 24 * time.Hour).Format(time.RFC3339),
-		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
-		RevokedAt: sql.NullString{},
-	}
+		user, err := cfg.db.GetUserByEmail(r.Context(), userLoginInc.Email)
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, "Email doesn't exist")
+			return
+		}
 
-	_, err = cfg.db.CreateRefreshToken(r.Context(), refreshParams)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Error creating ref token (db)")
-		return
-	}
+		err = auth.CheckPasswordHash(userLoginInc.Password, user.HashedPassword)
+		if err != nil {
+			respondWithError(w, http.StatusUnauthorized, "Incorrect email/pass")
+			return
+		}
 
-	myUser := User{
-		ID:        user.ID,
-		CreatedAt: user.CreatedAt,
-		UpdatedAt: user.UpdatedAt,
-		Email:     user.Email,
-	}
+		userUUID, err := uuid.Parse(user.ID)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error parsing id in login")
+			return
+		}
+		expTime := time.Hour
+		accToken, err := auth.MakeJWT(userUUID, cfg.secret, expTime)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Failed creating acc token")
+			return
+		}
 
-	respondWithJSON(w, http.StatusOK, response{
-		User:         myUser,
-		Token:        accToken,
-		RefreshToken: refreshToken,
-	})
+		refreshToken, err := auth.MakeRefreshToken()
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Failed creating ref token")
+			return
+		}
+
+		refreshParams := database.CreateRefreshTokenParams{
+			Token:     refreshToken,
+			UserID:    user.ID,
+			CreatedAt: time.Now().UTC().Format(time.RFC3339),
+			ExpiresAt: time.Now().Add(60 * 24 * time.Hour).Format(time.RFC3339),
+			UpdatedAt: time.Now().UTC().Format(time.RFC3339),
+			RevokedAt: sql.NullString{},
+		}
+
+		_, err = cfg.db.CreateRefreshToken(r.Context(), refreshParams)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Error creating ref token (db)")
+			return
+		}
+
+		myUser := User{
+			ID:        user.ID,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+			Email:     user.Email,
+		}
+
+		respondWithJSON(w, http.StatusOK, response{
+			User:         myUser,
+			Token:        accToken,
+			RefreshToken: refreshToken,
+		})
+
+	}
 }
 
 func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) {
@@ -217,4 +234,8 @@ func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 			Email:     user.Email,
 		},
 	})
+
+	http.Redirect(w, r, "/app", http.StatusSeeOther)
+	return
+
 }

@@ -7,19 +7,19 @@
   </head>
   <body>
     <h1 id="welcome">Vizz</h1>
-    <h3 id="title">Login</h3>
+    <h3 id="title">Sign Up</h3>
     
-    <form id="login-form" method="POST" action="/api/login">
+    <form id="signup-form" method="POST" action="/api/users">
       <label id="email-label">
         Email: <input type="email" placeholder="Email" id="email" name="email" required />
       </label>
       <label id="password-label">
         Password: <input type="password" placeholder="Password" id="password" name="password" required />
       </label>
-      <input id="submit" class="submit" type="submit" value="Login" />
+      <input id="submit" class="submit" type="submit" value="Sign up" />
     </form>
     <script>
-        const form = document.getElementById("login-form");
+        const form = document.getElementById("signup-form");
   
         form.addEventListener("submit", async (event) => {
           event.preventDefault(); // Prevent the default form submission
@@ -33,7 +33,7 @@
           };
   
           try {
-            const response = await fetch("/api/login", {
+            const response = await fetch("/api/users", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",

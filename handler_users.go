@@ -164,6 +164,15 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			Email:     user.Email,
 		}
 
+		http.SetCookie(w, &http.Cookie{
+			Name:     "acc_token",
+			Value:    accToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   true,
+			Expires:  time.Now().Add(24 * time.Hour),
+		})
+
 		//fmt.Println("Created user: %v\n", myUser)
 
 		http.Redirect(w, r, "/app", http.StatusSeeOther)
@@ -188,7 +197,7 @@ func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 		User
 	}
 
-	token, err := auth.GetBearerToken(r.Header)
+	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "No bearer")
 		return

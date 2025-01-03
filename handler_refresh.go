@@ -15,7 +15,7 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
 		Token string `json:"token"`
 	}
 
-	refToken, err := auth.GetBearerToken(r.Header)
+	refToken, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Bearer missing")
 		return
@@ -60,7 +60,7 @@ func (cfg *apiConfig) handlerRefresh(w http.ResponseWriter, r *http.Request) {
 }
 
 func (cfg *apiConfig) handlerRevoke(w http.ResponseWriter, r *http.Request) {
-	refreshToken, err := auth.GetBearerToken(r.Header)
+	refreshToken, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
 		respondWithError(w, http.StatusBadRequest, "Couldn't find token")
 		return

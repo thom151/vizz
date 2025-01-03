@@ -16,7 +16,7 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 		UserID      uuid.UUID
 	}
 
-	token, err := auth.GetBearerToken(r.Header)
+	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Couldn't find acc token")
 		return

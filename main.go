@@ -23,7 +23,7 @@ type apiConfig struct {
 }
 
 func main() {
-	production := false
+	production := true
 	if !production {
 		err := godotenv.Load()
 		if err != nil {

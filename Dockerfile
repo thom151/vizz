@@ -6,6 +6,6 @@ ADD vizz /usr/bin/vizz
 
 EXPOSE 8080
 
-ADD static /usr/bin/static
+ADD static /static
 
 CMD ["vizz"]

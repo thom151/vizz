@@ -23,15 +23,10 @@ type User struct {
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/usr/bin/static/signup.html")
+		http.ServeFile(w, r, "/static/signup.html")
 		return
 
 	case http.MethodPost:
-		err := r.ParseForm()
-		if err != nil {
-			http.Error(w, "Could not parse form data", http.StatusBadRequest)
-			return
-		}
 
 		type UserIncoming struct {
 			Email    string `json:"email"`
@@ -40,7 +35,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 
 		decoder := json.NewDecoder(r.Body)
 		userInc := UserIncoming{}
-		err = decoder.Decode(&userInc)
+		err := decoder.Decode(&userInc)
 		if err != nil {
 			respondWithError(w, http.StatusInternalServerError, "Couldn't decode email")
 			return
@@ -70,17 +65,15 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 
-		myUser := User{
+		_ = User{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
 		}
+		log.Println("User created successfully, redirecting to /app")
+		http.Redirect(w, r, "/app", http.StatusFound)
 
-		//respondWithJSON(w, http.StatusOK, myUser)
-		fmt.Println("Created user: %v\n", myUser)
-
-		http.Redirect(w, r, "/app", http.StatusSeeOther)
 		return
 	}
 }
@@ -88,7 +81,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/usr/bin/static/login.html")
+		http.ServeFile(w, r, "/static/login.html")
 		return
 
 	case http.MethodPost:
@@ -164,14 +157,14 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		myUser := User{
+		_ = User{
 			ID:        user.ID,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
 			Email:     user.Email,
 		}
 
-		fmt.Println("Created user: %v\n", myUser)
+		//fmt.Println("Created user: %v\n", myUser)
 
 		http.Redirect(w, r, "/app", http.StatusSeeOther)
 		return

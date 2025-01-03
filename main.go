@@ -67,7 +67,7 @@ func main() {
 		ReadHeaderTimeout: time.Second * 5,
 	}
 
-	handler := http.FileServer(http.Dir("./static/"))
+	handler := http.FileServer(http.Dir("./static/index.html"))
 
 	mux.Handle("/app/", apiCfg.middlewareMetricsInc(http.StripPrefix("/app", handler)))
 	mux.HandleFunc("/api/healthz", hanlderReadiness)

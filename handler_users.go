@@ -77,7 +77,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 			Email:     user.Email,
 		}
 
-		respondWithJSON(w, http.StatusOK, myUser)
+		//respondWithJSON(w, http.StatusOK, myUser)
 
 		http.Redirect(w, r, "/app", http.StatusSeeOther)
 		return
@@ -169,11 +169,14 @@ func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 			Email:     user.Email,
 		}
 
-		respondWithJSON(w, http.StatusOK, response{
-			User:         myUser,
-			Token:        accToken,
-			RefreshToken: refreshToken,
-		})
+		http.Redirect(w, r, "/app", http.StatusSeeOther)
+		return
+
+		//respondWithJSON(w, http.StatusOK, response{
+		//	User:         myUser,
+		//	Token:        accToken,
+		//	RefreshToken: refreshToken,
+		//})
 
 	}
 }
@@ -234,8 +237,5 @@ func (cfg *apiConfig) handlerUserUpdate(w http.ResponseWriter, r *http.Request) 
 			Email:     user.Email,
 		},
 	})
-
-	http.Redirect(w, r, "/app", http.StatusSeeOther)
-	return
 
 }

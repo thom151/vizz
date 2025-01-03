@@ -87,7 +87,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/usr/bin/static/signup.html")
+		http.ServeFile(w, r, "/usr/bin/static/login.html")
 		return
 
 	case http.MethodPost:

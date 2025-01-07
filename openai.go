@@ -64,7 +64,6 @@ func getResponse(c *openai.Client, thread_id, run_id string) ([]string, error) {
 			if err != nil {
 				return nil, err
 			}
-
 			message := messagesList.Messages[0].Content[0].Text.Value
 			prompts := strings.Split(message, "\n\n")
 			return prompts, nil
@@ -90,7 +89,6 @@ func genImageBase64(c *openai.Client, text string) (string, error) {
 		return "", err
 	}
 
-	fmt.Println("IMG URLS: ", resp.Data[0].URL)
 	return resp.Data[0].URL, nil
 
 }

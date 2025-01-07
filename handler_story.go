@@ -99,41 +99,81 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 	}
 	data.ID = bookID
 
+	err = GenerateMessagesAndImages(c, thread.ThreadID, cfg.assistant, &data)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error generating messages and images "+err.Error())
+		return
+	}
+
+	fmt.Println("EXECUTING TEMPLATE AGAIN")
 	tmp, err := template.ParseFiles("./static/story.html")
 	if err != nil {
 		respondWithError(w, http.StatusInternalServerError, "error parsing tmp")
 		return
 	}
 	err = tmp.Execute(w, data)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "error executing data")
-		return
-	}
 
-	_, err = genMessage(c, thread.ThreadID, string(data.PageContent))
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to gen msg")
-		return
-	}
+}
 
-	run, err := getRun(c, thread.ThreadID, cfg.assistant)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "failed to get run")
-		return
-	}
+func GenerateMessagesAndImages(c *openai.Client, threadID, assistantID string, data *PageData) error {
 
-	messages, err := getResponse(c, thread.ThreadID, run.ID)
-	data.Images = []string{}
-	for i := 0; i < len(messages); i++ {
-		url, err := genImageBase64(c, messages[i])
-		if err != nil {
-			respondWithError(w, http.StatusInternalServerError, "failed to gen image "+err.Error())
-			return
+	messagesChan := make(chan string)
+	imagesChan := make(chan string)
+	errChan := make(chan error, 2)
+
+	go generateMessages(messagesChan, errChan, c, threadID, assistantID, data)
+
+	go func() {
+		for prompt := range messagesChan {
+			url, err := genImageBase64(c, prompt)
+			if err != nil {
+				errChan <- err
+				return
+			}
+			imagesChan <- url
 		}
 
-		data.Images = append(data.Images, url)
+		close(imagesChan)
+	}()
+
+	for {
+		select {
+		case err := <-errChan:
+			return err
+		case image, ok := <-imagesChan:
+			if !ok {
+				return nil
+			}
+
+			fmt.Println("\n\n url: ", image, "\n\n")
+			data.Images = append(data.Images, image)
+		}
 	}
-	err = tmp.Execute(w, data)
+
+}
+
+func generateMessages(messagesChan chan<- string, errChan chan<- error, c *openai.Client, threadID, assistantID string, data *PageData) {
+	defer close(messagesChan)
+	_, err := genMessage(c, threadID, string(data.PageContent))
+	if err != nil {
+		errChan <- err
+		return
+	}
+
+	run, err := getRun(c, threadID, assistantID)
+	if err != nil {
+		errChan <- err
+	}
+
+	messages, err := getResponse(c, threadID, run.ID)
+	if err != nil {
+		errChan <- err
+	}
+
+	for _, message := range messages {
+		messagesChan <- message
+	}
+
 }
 
 func paginateEpubContent(filePath string, currentPage int) (PageData, error) {

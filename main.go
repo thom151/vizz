@@ -43,7 +43,9 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
+
 		log.Fatal("cannot read port")
+		port = "8080"
 	}
 
 	open_api := os.Getenv("OPEN_API")

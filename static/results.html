@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+</head>
+<body>
+    <h1>Search Results</h1>
+
+    <div id="results">
+        {{ if .Books }}
+            {{ range .Books }}
+            <div class="book">
+                <h3><a href="/story?id={{.ID}}">{{ .Title }}</a></h3>
+                <p><strong>Author:</strong> {{ .Author }}</p>
+                <p><strong>Description:</strong> {{ .Description }}</p>
+            </div>
+            {{ end }}
+        {{ else }}
+            <p>No books found.</p>
+        {{ end }}
+    </div>
+
+    <a href="/search">Back to Search</a>
+</body>
+</html>

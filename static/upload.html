@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Upload EPUB FILE</title>
+    </head>
+   
+
+<body>
+    <h1>Upload EPUB File</h1>
+    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        <label for="file">Choose EPUB file:</label>
+        <input type="file" id="file" name="file" accept=".epub" required>
+        <button type="submit">Upload</button>
+    </form>
+    <script>
+        const form = document.getElementById('upload-form')
+        form.addEventListener("submit", (event) => {
+            const fileInput = document.getElementById("file")
+            const file = fileInput.files[0]
+            if (!file) {
+                event.preventDefault();
+                alert("Please select an EPUB file.")
+            } else if (!file.name.endsWith(".epub")) {
+
+                event.preventDefault();
+                alert("Only epub files are allowed")
+            }
+
+        });
+    </script>
+</body>
+</html>

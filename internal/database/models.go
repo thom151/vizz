@@ -8,6 +8,16 @@ import (
 	"database/sql"
 )
 
+type Book struct {
+	ID          int64
+	Title       string
+	Author      sql.NullString
+	Description sql.NullString
+	EpubPath    string
+	CreatedAt   sql.NullTime
+	UpdatedAt   sql.NullTime
+}
+
 type RefreshToken struct {
 	Token     string
 	CreatedAt string
@@ -15,6 +25,15 @@ type RefreshToken struct {
 	UserID    string
 	ExpiresAt string
 	RevokedAt sql.NullString
+}
+
+type Thread struct {
+	ID        string
+	CreatedAt string
+	UpdatedAt string
+	ThreadID  string
+	UserID    string
+	BookID    int64
 }
 
 type User struct {

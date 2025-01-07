@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Story Reader</title>
+    </head>
+    <body>
+        <div id="content">
+            {{.PageContent}}
+        </div>
+        <div id="navigation">
+            <a href="/story?page={{.PrevPage}}&id={{.ID}}" {{if .IsFirstPage}}style="display:none;"{{end}}>Previous</a>
+            <a href="/story?page={{.NextPage}}&id={{.ID}}" {{if .IsLastPage}}style="display:none;"{{end}}>Next</a>
+        </div>
+    </body>
+</html>

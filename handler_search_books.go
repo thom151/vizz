@@ -1,20 +1,28 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/thom151/vizz/internal/auth"
+	"github.com/thom151/vizz/internal/database"
 )
 
+type BookData struct {
+	Books []database.Book
+}
+
 func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request) {
+
 	type response struct {
-		BookResults BookResults
-		UserID      uuid.UUID
+		BookFile string
+		UserID   uuid.UUID
 	}
 
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
@@ -24,16 +32,53 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	userID, err := auth.ValidateJWT(token, cfg.secret)
+	_, err = auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
 		respondWithError(w, http.StatusUnauthorized, "Invalid jwt")
 		return
 	}
 
-	book := r.URL.Query().Get("book")
+	switch r.Method {
+	case http.MethodGet:
+		http.ServeFile(w, r, "./static/search.html")
+		return
 
-	fmt.Printf("Book: %s\n", string(book))
+	case http.MethodPost:
 
+		bookQuery := r.FormValue("book")
+
+		var bookParam sql.NullString
+		if bookQuery != "" {
+			bookParam = sql.NullString{String: bookQuery, Valid: true}
+		} else {
+			bookParam = sql.NullString{Valid: false}
+		}
+		books, err := cfg.db.GetBooks(r.Context(), bookParam)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "Database query failed")
+			return
+		}
+
+		tmp, err := template.ParseFiles("./static/results.html")
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "error parsing template")
+			return
+		}
+
+		bookData := BookData{
+			Books: books,
+		}
+
+		fmt.Printf("Bookdata: %v\n", bookQuery)
+		err = tmp.Execute(w, bookData)
+		if err != nil {
+			respondWithError(w, http.StatusInternalServerError, "error executing data")
+			return
+		}
+	}
+}
+
+func apiSearch(book string) (BookResults, error) {
 	url := "https://gutendex.com/books?search=" + book
 
 	client := &http.Client{
@@ -42,14 +87,12 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Creating req failed")
-		return
+		return BookResults{}, err
 	}
 
 	resp, err := client.Do(req)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Client Request do failed")
-		return
+		return BookResults{}, err
 	}
 
 	defer resp.Body.Close()
@@ -58,12 +101,13 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 	decoder := json.NewDecoder(resp.Body)
 	err = decoder.Decode(&bookResults)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "Decoding  results failed")
-		return
+		return BookResults{}, err
 	}
 
-	respondWithJSON(w, http.StatusOK, response{
-		BookResults: bookResults,
-		UserID:      userID,
-	})
+	return bookResults, nil
+}
+
+func getFileFromBookResults(results BookResults) string {
+	file := results.Results[0].Formats["text/plain; charset=us-ascii"]
+	return file
 }

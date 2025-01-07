@@ -20,10 +20,13 @@ type apiConfig struct {
 	db             *database.Queries
 	platform       string
 	secret         string
+	bookCache      map[string]string
+	openai_key     string
+	assistant      string
 }
 
 func main() {
-	production := true
+	production := false
 	if !production {
 		err := godotenv.Load()
 		if err != nil {
@@ -31,7 +34,7 @@ func main() {
 		}
 
 	}
-	dbURL := os.Getenv("DB_URL")
+	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
 	} else {
@@ -41,6 +44,11 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		log.Fatal("cannot read port")
+	}
+
+	open_api := os.Getenv("OPEN_API")
+	if open_api == "" {
+		log.Fatal("cannot read openapi")
 	}
 
 	db, err := sql.Open("libsql", dbURL)
@@ -55,11 +63,22 @@ func main() {
 
 	dbQueries := database.New(db)
 
+	if err != nil {
+		log.Fatal("error parsing tmp in main")
+	}
+
+	ass := os.Getenv("ASSISTANT")
+	if ass == "" {
+		log.Fatal("assistant id not set")
+	}
 	apiCfg := apiConfig{
 		fileserverHits: atomic.Int32{},
 		db:             dbQueries,
 		platform:       platform,
 		secret:         os.Getenv("SECRET"),
+		bookCache:      make(map[string]string),
+		openai_key:     open_api,
+		assistant:      ass,
 	}
 
 	mux := http.NewServeMux()
@@ -82,6 +101,8 @@ func main() {
 	mux.HandleFunc("POST /api/refresh", apiCfg.handlerRefresh)
 	mux.HandleFunc("POST /api/revoke", apiCfg.handlerRevoke)
 	mux.HandleFunc("PUT /api/users", apiCfg.handlerUserUpdate)
+	mux.HandleFunc("/story", apiCfg.handlerStory)
+	mux.HandleFunc("/upload", apiCfg.handlerCreateBook)
 
 	log.Printf("Serving on port: %s\n", port)
 	log.Fatal(srv.ListenAndServe())

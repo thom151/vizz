@@ -23,7 +23,7 @@ type User struct {
 func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/static/signup.html")
+		http.ServeFile(w, r, "./static/signup.html")
 		return
 
 	case http.MethodPost:
@@ -61,6 +61,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 
 		user, err := cfg.db.CreateUser(r.Context(), userParams)
 		if err != nil {
+			fmt.Println(err)
 			respondWithError(w, http.StatusInternalServerError, "Couldn't create user"+err.Error())
 			return
 		}
@@ -81,7 +82,7 @@ func (cfg *apiConfig) handlerCreateUser(w http.ResponseWriter, r *http.Request) 
 func (cfg *apiConfig) handlerLogin(w http.ResponseWriter, r *http.Request) {
 	switch r.Method {
 	case http.MethodGet:
-		http.ServeFile(w, r, "/static/login.html")
+		http.ServeFile(w, r, "./static/login.html")
 		return
 
 	case http.MethodPost:

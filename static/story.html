@@ -1,11 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Story Reader</title>
-    </head>
-    <body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Story Reader</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: row;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #story-container {
+            flex: 2;
+            padding: 20px;
+            overflow-y: auto;
+            border-right: 1px solid #ccc;
+        }
+        #images-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        #navigation {
+            margin-top: 20px;
+        }
+        a {
+            text-decoration: none;
+            color: blue;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="story-container">
         <div id="content">
             {{.PageContent}}
         </div>
@@ -13,5 +46,19 @@
             <a href="/story?page={{.PrevPage}}&id={{.ID}}" {{if .IsFirstPage}}style="display:none;"{{end}}>Previous</a>
             <a href="/story?page={{.NextPage}}&id={{.ID}}" {{if .IsLastPage}}style="display:none;"{{end}}>Next</a>
         </div>
-    </body>
+    </div>
+    <div id="images-container">
+        <h2>Images</h2>
+        {{if .Images}}
+            {{range .Images}}
+                <div>
+                    <img src="{{.}}" alt="Story Image" style="max-width: 100%; height: auto;">
+                </div>
+            {{end}}
+        {{else}}
+            <p>No images available.</p>
+        {{end}}
+    </div>
+</body>
 </html>
+

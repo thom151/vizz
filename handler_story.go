@@ -22,6 +22,7 @@ type PageData struct {
 	IsFirstPage bool
 	IsLastPage  bool
 	ID          int
+	Images      []string
 }
 
 func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
@@ -96,6 +97,7 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 		respondWithError(w, http.StatusInternalServerError, "error paginating epub")
 		return
 	}
+	data.ID = bookID
 
 	tmp, err := template.ParseFiles("./static/story.html")
 	if err != nil {
@@ -121,8 +123,7 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 	}
 
 	messages, err := getResponse(c, thread.ThreadID, run.ID)
-
-	urls := []string{}
+	data.Images = []string{}
 	for i := 0; i < len(messages); i++ {
 		url, err := genImageBase64(c, messages[i])
 		if err != nil {
@@ -130,9 +131,9 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		urls = append(urls, url)
+		data.Images = append(data.Images, url)
 	}
-
+	err = tmp.Execute(w, data)
 }
 
 func paginateEpubContent(filePath string, currentPage int) (PageData, error) {

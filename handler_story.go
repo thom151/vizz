@@ -99,11 +99,11 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 	}
 	data.ID = bookID
 	fmt.Println(thread.ThreadID)
-	//err = GenerateMessagesAndImages(c, thread.ThreadID, cfg.assistant, &data)
-	//if err != nil {
-	//	respondWithError(w, http.StatusInternalServerError, "error generating messages and images "+err.Error())
-	//	return
-	//}
+	err = GenerateMessagesAndImages(c, thread.ThreadID, cfg.assistant, &data)
+	if err != nil {
+		respondWithError(w, http.StatusInternalServerError, "error generating messages and images "+err.Error())
+		return
+	}
 
 	fmt.Println("EXECUTING TEMPLATE AGAIN")
 	tmp, err := template.ParseFiles("./static/story.html")

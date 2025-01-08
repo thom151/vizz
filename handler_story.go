@@ -94,7 +94,7 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 
 	data, err := paginateEpubContent(book.EpubPath, currPageInt)
 	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "error paginating epub")
+		respondWithError(w, http.StatusInternalServerError, "error paginating epub "+err.Error())
 		return
 	}
 	data.ID = bookID

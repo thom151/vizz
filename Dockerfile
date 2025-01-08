@@ -8,4 +8,5 @@ EXPOSE 8080
 
 ADD static ./static
 ADD temp ./temp
+
 CMD ["vizz"]

@@ -28,13 +28,12 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	log.Printf("Got cookies: %v\n", token)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Couldn't find acc token")
 		return
 	}
 
 	_, err = auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Invalid jwt")
+		http.Redirect(w, r, "/api/login", http.StatusFound)
 		return
 	}
 

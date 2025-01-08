@@ -93,6 +93,7 @@ func main() {
 
 	_ = http.FileServer(http.Dir("./static/index.html"))
 
+	mux.HandleFunc("/", apiCfg.handlerHome)
 	mux.HandleFunc("/app/", apiCfg.handlerIndex)
 	mux.HandleFunc("/api/healthz", hanlderReadiness)
 	mux.HandleFunc("/admin/metrics", apiCfg.handlerMetrics)
@@ -161,7 +162,9 @@ func (cfg *apiConfig) handlerMetrics(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 }
-
+func (cfg *apiConfig) handlerHome(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, "/app", http.StatusFound)
+}
 func (cfg *apiConfig) handlerIndex(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/index.html")
 }

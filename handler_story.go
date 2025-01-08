@@ -34,7 +34,7 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 
 	userID, err := auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Unauthorized, invalid token")
+		http.Redirect(w, r, "api/login", http.StatusFound)
 		return
 	}
 
@@ -53,7 +53,7 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 	book, err := cfg.db.GetBook(r.Context(), int64(bookID))
 	currPage := r.URL.Query().Get("page")
 	if currPage == "" {
-		currPage = "1"
+		currPage = "6"
 	}
 
 	threadParams := database.GetThreadParams{
@@ -98,12 +98,12 @@ func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data.ID = bookID
-
-	err = GenerateMessagesAndImages(c, thread.ThreadID, cfg.assistant, &data)
-	if err != nil {
-		respondWithError(w, http.StatusInternalServerError, "error generating messages and images "+err.Error())
-		return
-	}
+	fmt.Println(thread.ThreadID)
+	//err = GenerateMessagesAndImages(c, thread.ThreadID, cfg.assistant, &data)
+	//if err != nil {
+	//	respondWithError(w, http.StatusInternalServerError, "error generating messages and images "+err.Error())
+	//	return
+	//}
 
 	fmt.Println("EXECUTING TEMPLATE AGAIN")
 	tmp, err := template.ParseFiles("./static/story.html")
@@ -154,7 +154,7 @@ func GenerateMessagesAndImages(c *openai.Client, threadID, assistantID string, d
 
 func generateMessages(messagesChan chan<- string, errChan chan<- error, c *openai.Client, threadID, assistantID string, data *PageData) {
 	defer close(messagesChan)
-	_, err := genMessage(c, threadID, string(data.PageContent))
+	_, err := genMessage(c, threadID, stripHTMLTags(string(data.PageContent)))
 	if err != nil {
 		errChan <- err
 		return
@@ -208,6 +208,8 @@ func paginateEpubContent(filePath string, currentPage int) (PageData, error) {
 		return PageData{}, err
 	}
 
+	fmt.Println(content.String())
+
 	pageData := PageData{
 		PageContent: template.HTML(RemoveUnwantedTags(content.String())),
 		PrevPage:    currentPage - 1,
@@ -221,9 +223,9 @@ func paginateEpubContent(filePath string, currentPage int) (PageData, error) {
 
 func RemoveUnwantedTags(htmlContent string) string {
 	// Regular expression to match <img> tags
-	imgRe := regexp.MustCompile(`<img[^>]*>`)
+	imgRe := regexp.MustCompile(`(?i)<img[^>]*>`)
 	// Regular expression to match <a> tags and their content
-	linkRe := regexp.MustCompile(`<a[^>]*>.*?</a>`)
+	linkRe := regexp.MustCompile(`(?i)<a[^>]*?>|</a>`)
 
 	// Remove <img> tags
 	cleanedContent := imgRe.ReplaceAllString(htmlContent, "")
@@ -231,4 +233,9 @@ func RemoveUnwantedTags(htmlContent string) string {
 	cleanedContent = linkRe.ReplaceAllString(cleanedContent, "")
 
 	return cleanedContent
+}
+
+func stripHTMLTags(input string) string {
+	re := regexp.MustCompile(`(?i)<[^>]*>`)
+	return re.ReplaceAllString(input, "")
 }

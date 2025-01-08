@@ -7,5 +7,5 @@ ADD vizz /usr/bin/vizz
 EXPOSE 8080
 
 ADD static ./static
-
+ADD temp ./temp
 CMD ["vizz"]

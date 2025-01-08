@@ -15,13 +15,12 @@ import (
 func (cfg *apiConfig) handlerCreateBook(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "No token")
 		return
 	}
 
 	_, err = auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Invalid jwt")
+		http.Redirect(w, r, "/api/login", http.StatusFound)
 		return
 	}
 	switch r.Method {

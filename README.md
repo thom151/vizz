@@ -46,14 +46,14 @@ Before starting, ensure you have:
    - **Note**: Using the OpenAI API for image generation will incur costs. Allocate a budget of around $1–$2 to cover the API usage fees, depending on the number of images generated.
 
 4. **ASSISTANT**
-   - Past the following: asst_gA4LrW3d74SvGeZjW8gHnPfv
+   - Paste the following: `asst_gA4LrW3d74SvGeZjW8gHnPfv`
 ---
 ### Steps to Run Locally
 
 1. **Clone the Repository**
     Clone the repository to your local machine:
     ```bash
-    git clone https://github.com/thom-151/vizz.git
+    git clone https://github.com/thom151/vizz.git
     cd vizz
 
 2. **Install Dependencies**
@@ -82,7 +82,7 @@ Before starting, ensure you have:
    Open your browser and navigate to:
    ```
    http://localhost:8080
-
+   ```
     ---
 ## 🛠 Usage
 

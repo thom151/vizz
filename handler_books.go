@@ -15,6 +15,7 @@ import (
 func (cfg *apiConfig) handlerCreateBook(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
+		http.Redirect(w, r, "/api/login", http.StatusFound)
 		return
 	}
 

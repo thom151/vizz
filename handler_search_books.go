@@ -26,13 +26,16 @@ func (cfg *apiConfig) handlerSearchBooks(w http.ResponseWriter, r *http.Request)
 	}
 
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
+	fmt.Println("Token: ", err)
 	log.Printf("Got cookies: %v\n", token)
 	if err != nil {
+		http.Redirect(w, r, "/api/login", http.StatusFound)
 		return
 	}
 
 	_, err = auth.ValidateJWT(token, cfg.secret)
 	if err != nil {
+		fmt.Println("Not logged in")
 		http.Redirect(w, r, "/api/login", http.StatusFound)
 		return
 	}

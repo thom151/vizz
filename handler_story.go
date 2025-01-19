@@ -28,7 +28,7 @@ type PageData struct {
 func (cfg *apiConfig) handlerStory(w http.ResponseWriter, r *http.Request) {
 	token, err := auth.GetBearerToken(r.Header, r.Cookies())
 	if err != nil {
-		respondWithError(w, http.StatusUnauthorized, "Couldn't find acc token in story")
+		respondWithError(w, http.StatusUnauthorized, "Couldn't find acc token in story, please log in")
 		return
 	}
 

@@ -55,4 +55,10 @@ jobs:
         run: ./scripts/migrateup.sh
 
       - name: Deploy to cloud run
-        run: gcloud run deploy vizz --image us-central1-docker.pkg.dev/vizz-446508/vizz-ar-repo/vizz:latest --region us-central1 --allow-unauthenticated --project vizz-446508 --max-instances=4
+              gcloud run deploy $SERVICE_NAME \
+              --image $IMAGE_URI \
+              --region $REGION \
+              --allow-unauthenticated \
+              --project $PROJECT_ID \
+              --max-instances=$MAX_INSTANCES
+

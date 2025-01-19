@@ -4,7 +4,7 @@
 **Vizz** is an interactive website that would transform stories into images. By uploading a story or a book, users will be generated images per chapter as they read.
 
 ## 🤔 Why Vizz?
-I love reading books. Reading books requires a lot of imagination. However, I often find it challenging to visualize intricate plots or alien worlds, especally reading science fiction books. Viz was created to bridge the gap between imaging and storytelling, offering readers a way to see the stories come to life.
+I have recently been reading a lot of science-fiction books. Reading books requires a lot of imagination. However, I often find it challenging to visualize intricate plots or alien worlds, especally reading science fiction books. Viz was created to bridge the gap between imaging and storytelling, offering readers a way to see the stories come to life.
 
 
 ---

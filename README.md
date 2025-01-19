@@ -76,7 +76,7 @@ Before starting, ensure you have:
 6. **Run the Application**  
    Start the server with the following command:
    ```bash
-   go run main.go
+   go run .
    ```
 7. **Access the Application**  
    Open your browser and navigate to:
@@ -130,6 +130,37 @@ Here’s how to interact with the website once it’s running locally:
 3. **OpenAI API Costs**: Be mindful of the API usage as it may incur costs based on usage.
 
 ---
+## 🤝 Contributing
+
+### Clone the repo
+
+```bash
+git clone https://github.com/thom151/vizz
+cd vizz
+```
+
+### Build the project
+
+```bash
+go build
+```
+
+### Run the project
+```bash
+./vizz
+```
+
+### Run the tests
+
+```bash
+go test ./...
+```
+
+---
+
+### Submit a pull request
+
+If you'd like to contribute, please fork the repository and open a pull request to the `main` branch.
 
 ## 🤝 Need Help?
 

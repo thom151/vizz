@@ -79,7 +79,7 @@ func genImageBase64(c *openai.Client, text string) (string, error) {
 		openai.ImageRequest{
 			Model:          openai.CreateImageModelDallE3,
 			Quality:        "standard",
-			Prompt:         "A cartoon version of " + text + "There should be no text",
+			Prompt:         "A lego version of " + text + "There should be no text",
 			ResponseFormat: openai.CreateImageResponseFormatURL,
 			N:              1,
 		},

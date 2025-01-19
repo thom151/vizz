@@ -26,7 +26,7 @@ type apiConfig struct {
 }
 
 func main() {
-	production := true
+	production := false
 	if !production {
 		err := godotenv.Load()
 		if err != nil {
@@ -34,7 +34,7 @@ func main() {
 		}
 
 	}
-	dbURL := os.Getenv("DB_URL")
+	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
 		log.Fatal("Db url not set")
 	} else {
